@@ -15,7 +15,7 @@ from dataload.dataloader import build_dataloader
 def main():
     # 모델 및 토크나이저
     config, device = global_setting('cfg.yaml')
-    model = unet_load(device)
+    model = load_model(device, config, name='LSTM')
 
     # dataframes
     data_path = './data/train_data.csv'

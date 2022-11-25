@@ -1,0 +1,39 @@
+SEED: 1234
+
+DATA:
+  PAIR : ['garibi', 'oyster']
+  TRAIN_CSV: './data/train_data.csv'
+  TEST_CSV: './data/test_data.csv'
+MODEL:
+  NAME: 'Huffon/klue-roberta-base-nli'
+  CRITERIA: 'DiceLoss'
+  OPTIMIZER: 'SGD-Nesterov'
+  LR: 0.001
+  MOMENTUM: 0.9
+  WEIGHT_DECAY: 0.000001
+  CHECKPOINT: './ckpt/Huffon-klue-roberta-base-nli/220224-1129_SGD-Nesterov_0.0001.pth' # null == None, 불러올 모델
+  # CHECKPOINT: null
+  N_CLASSES: 1 # class 개수
+TRAIN:
+  BATCH_SIZE: 16
+  EPOCHS: 100
+  EARLYSTOP_PATIENT: 10
+  MODEL_SAVE_PATH: 'ckpt'
+  LOGGING_SEP: '|'
+  LOGGING_SAVE_PATH: './log.txt'
+  VALID_SPLIT_SIZE: 0.2
+VALID:
+  BATCH_SIZE: 16
+TEST:
+  BATCH_SIZE: 1
+ENSEMBLE:
+  MODEL_LIST_DIR: 'ensemble'
+  N_CLASSES: 3 # class 개수
+  BATCH_SIZE: 1
+
+
+# Default
+#  OPTIMIZER: 'SAM'
+#  LR: 0.01
+#  MOMENTUM: 0.9
+#  WEIGHT_DECAY: 0.000001
