@@ -2,8 +2,6 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from dataload.dataloader import build_dataloader
-
 
 def print_result(result):
     """
@@ -16,6 +14,17 @@ def print_result(result):
         f"[epoch{epoch}] train_loss: {round(train_loss, 3)}, valid_loss: {round(valid_loss, 3)}, train_acc: {train_acc}%, valid_acc: {valid_acc}%"
     )
 
+
+def get_accuracy(y_hat, target, name='MAE'):
+
+    acc = None
+    diff = torch.abs(y_hat - target)
+    mae = torch.mean(diff)
+    mse = torch.mean(torch.pow(diff, 2))
+    rmse = torch.sqrt(mse)
+
+
+    return acc
 
 def split_dataset(df, config):
     from sklearn.model_selection import train_test_split
@@ -102,31 +111,21 @@ def share_loop(epoch=10,
                 optimizer.step()
 
             total_losses.append(loss.item())
+
             # accuracy 계산
-            predicted = torch.argmax(torch.softmax(out, dim=1), dim=1)
-            label_ = torch.argmax(label, dim=1)
-            count += label.size(0)
-            acc = (predicted == label_).sum().item()
-            correct += acc
+            acc = RMSE()
+
 
             progress_bar.set_postfix({'loss': loss.item(), 'acc': acc})
 
     elif mode == 'valid':
         model.eval()
         with torch.no_grad():
-            for batch in progress_bar:
-                data, label = batch
+            for data, label in progress_bar:
+                # data, label = batch
                 out = model(data).logits
-                y_hat = torch.softmax(out, dim=1)
-                loss = criterion(y_hat, label)
 
-                # accuracy 계산
-                predicted = torch.argmax(y_hat, dim=1)
-                label_ = torch.argmax(label, dim=1)
-                count += label.size(0)
-
-                acc = (predicted == label_).sum().item()
-                correct += acc
+                loss = criterion(out, label)
 
                 total_losses.append(loss.item())
 
