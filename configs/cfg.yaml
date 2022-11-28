@@ -8,6 +8,7 @@ DATA:
   Y_TARGET: ['total']
   FILE_NAME: 'total_set.xlsx'
   PRESET: ''
+
 MODEL:
   NAME: 'RNN'
   CRITERIA: 'MSELoss'
@@ -18,6 +19,7 @@ MODEL:
   N_CLASSES: 1 # class 개수
   CHECKPOINT: null
   #  CHECKPOINT: './ckpt/Huffon-klue-roberta-base-nli/220224-1129_SGD-Nesterov_0.0001.pth' # null == None, 불러올 모델
+
 TRAIN:
   BATCH_SIZE: 16
   EPOCHS: 100
@@ -30,6 +32,7 @@ VALID:
   BATCH_SIZE: 16
 TEST:
   BATCH_SIZE: 1
+
 ENSEMBLE:
   MODEL_LIST_DIR: 'ensemble'
   N_CLASSES: 3 # class 개수

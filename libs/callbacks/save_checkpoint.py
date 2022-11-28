@@ -40,20 +40,21 @@ class SaveCheckPoint:
 
     def save_ckpt(self, model):
         """
-        checkpoint를 저장하는 메서드입니다.
+        Save Checkpoint
         :param model:
         :return:
         """
-        t = time.strftime("%y%m%d-%H%M")
-        filename = '{}_{}_{}.pth'.format(t, self.opt_name, 'best')
+
         # self.lr
 
         save_path = os.path.join(self.path, self.model_name)
+        os.makedirs(save_path, exist_ok=True)
+
+        cnt = len(os.listdir(save_path))
+
+        t = time.strftime("%y%m%d-%H%M")
+        filename = '{}_{}_{}.pth'.format(t, self.opt_name, 'best'+str(cnt))
         save_path = os.path.join(save_path, filename)
-
-        directory = os.path.split(save_path)[0]
-
-        os.makedirs(directory, exist_ok=True)
 
         if self.verbose:
             self.verbose_print()

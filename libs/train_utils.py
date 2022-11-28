@@ -83,10 +83,9 @@ def share_loop(epoch=10,
     progress_bar = tqdm(data_loader, desc=f"{mode} {epoch}")
     if mode == "train":
         model.train()
-        for batch in progress_bar:
-            data, label = batch
+        for data, label in progress_bar:
             out = model(data).float()
-            label = label.float()
+            # label = label.float()
 
             loss = criterion(out, label)
             # 역전파

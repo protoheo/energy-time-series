@@ -87,8 +87,7 @@ def main():
 
 
 if __name__ == '__main__':
-    # target_dir = 'imgs'
-    # make_dataframe(target_dir, platform_sys='Windows')
+
     main()
 
 

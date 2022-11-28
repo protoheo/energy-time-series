@@ -33,6 +33,6 @@ def opt_load(model, config):
             nesterov=True,
         )
     else:
-        assert False, "No OPT"
+        assert False, "No Optimizer Setting"
 
     return optimizer, config["MODEL"]["OPTIMIZER"]
