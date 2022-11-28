@@ -1,7 +1,8 @@
 import numpy as np
-import pandas as pd
 import torch
 from tqdm import tqdm
+
+from dataload.dataloader import build_dataloader
 
 
 def print_result(result):
@@ -16,7 +17,7 @@ def print_result(result):
     )
 
 
-def split_dataset(data_path, target_column=None, valid_size=0.2, seed=None):
+def split_dataset(df, config):
     from sklearn.model_selection import train_test_split
     """
     학습 데이터셋과 검증 데이터셋으로 나누는 함수입니다.
@@ -26,16 +27,33 @@ def split_dataset(data_path, target_column=None, valid_size=0.2, seed=None):
     :param target_column:
     :return:
     """
-    df = pd.read_csv(data_path)
-    train_df, valid_df = train_test_split(
-        df,
-        test_size=valid_size,
-        random_state=seed
-    )
-    # stratify=df[target_column]
-    train_df.reset_index(drop=True, inplace=True)
-    valid_df.reset_index(drop=True, inplace=True)
-    return train_df, valid_df
+
+    if config['PARTITION'] == 2:
+        train, test = train_test_split(
+            df,
+            test_size=0.2,
+            shuffle=True,
+            random_state=config['SEED']
+        )
+
+        # 데이터 로더
+        return train, test
+
+    else:
+        train, test = train_test_split(
+            df,
+            test_size=0.4,
+            shuffle=True,
+            random_state=config['SEED']
+        )
+
+        valid, test = train_test_split(
+            test,
+            test_size=0.5,
+            random_state=config['SEED']
+        )
+
+        return train, valid, test
 
 
 def share_loop(epoch=10,
@@ -57,9 +75,9 @@ def share_loop(epoch=10,
     count = 0
     correct = 0
     total_losses = []
-    if optimizer is not None:
-        opt_name = optimizer[1]
-        optimizer = optimizer[0]
+
+    opt_name = optimizer[1]
+    optimizer = optimizer[0]
 
     mode = mode.lower()
     progress_bar = tqdm(data_loader, desc=f"{mode} {epoch}")

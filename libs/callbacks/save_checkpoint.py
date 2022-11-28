@@ -45,7 +45,8 @@ class SaveCheckPoint:
         :return:
         """
         t = time.strftime("%y%m%d-%H%M")
-        filename = '{}_{}_{}.pth'.format(t, self.opt_name, self.lr)
+        filename = '{}_{}_{}.pth'.format(t, self.opt_name, 'best')
+        # self.lr
 
         save_path = os.path.join(self.path, self.model_name)
         save_path = os.path.join(save_path, filename)

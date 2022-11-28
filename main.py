@@ -1,8 +1,10 @@
 import pandas as pd
-
+import os
+from sklearn.preprocessing import MinMaxScaler
 
 from libs.core.trainer import Trainer
 from configs.setting import global_setting
+from model.model_load import load_model
 from model.opt_load import opt_load
 from model.loss_load import loss_load
 from libs.logger.csv_logger import CSVLogger
@@ -15,19 +17,42 @@ from dataload.dataloader import build_dataloader
 def main():
     # 모델 및 토크나이저
     config, device = global_setting('cfg.yaml')
-    model = load_model(device, config, name='LSTM')
 
     # dataframes
-    data_path = './data/train_data.csv'
-    train_df, valid_df = train_utils.split_dataset(data_path)
-    test_df = pd.read_csv('./data/test_data.csv')
+    data_path = os.path.join(config['DATA_PATH'], config['FILE_NAME'])
+    df = pd.read_excel(data_path)
 
-    # transfor
+    train, valid, test = train_utils.split_dataset(df, config)
 
-    # 데이터 로더
-    train_loader = build_dataloader(config=config, df=train_df, mode="train")
-    valid_loader = build_dataloader(config=config, df=valid_df, mode="valid")
-    test_loader = build_dataloader(config=config, df=test_df, mode='test')
+    # Define Dataset
+    weather_cols = config['X_COLS']
+
+    train_weather_x = train[weather_cols]
+    valid_weather_x = valid[weather_cols]
+    test_weather_x = test[weather_cols]
+
+    train_weather_y = train[['total']]
+    valid_weather_y = valid[['total']]
+    test_weather_y = test[['total']]
+
+    # Set Scaler
+    sc_x = MinMaxScaler()
+    sc_x.fit(train_weather_x)
+
+    train_x = sc_x.transform(train_weather_x)
+    valid_x = sc_x.transform(valid_weather_x)
+    test_x = sc_x.transform(test_weather_x)
+
+    train_y = train_weather_y[['total']].values
+    valid_y = valid_weather_y[['total']].values
+    test_y = test_weather_y[['total']].values
+
+    train_loader = build_dataloader([train_x, train_y], config=config, mode="train")
+    valid_loader = build_dataloader([valid_x, valid_y], config=config, mode="valid")
+    test_loader = build_dataloader([test_x, test_y], config=config, mode='test')
+
+    # Load Model
+    model = load_model(device, config, name='RNN')
 
     # loss, optimizer
     criterion = loss_load(config=config, device=device)
@@ -55,7 +80,6 @@ def main():
                     criterion=criterion,
                     optimizer=optimizer,
                     device=device,
-                    transform=transform,
                     logger=logger,
                     checkpoint=checkpoint,
                     early_stopping=early_stopping)

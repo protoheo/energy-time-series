@@ -14,10 +14,10 @@ class Trainer:
                  criterion=None,
                  optimizer=None,
                  device=None,
-                 transform=None,
                  logger=None,
                  checkpoint=None,
                  early_stopping=None):
+
         self.config = config
         self.model = model
         self.train_loader = train_loader
@@ -26,7 +26,6 @@ class Trainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.device = device
-        self.transform = transform
         self.logger = logger
         self.checkpoint = checkpoint
         self.early_stopping = early_stopping

@@ -1,10 +1,8 @@
 import torch
-
 from model.sam import SAM
 
 
-def opt_load(config, model):
-    optimizer = None
+def opt_load(model, config):
     if config["MODEL"]["OPTIMIZER"] == "Adam":
         optimizer = torch.optim.Adam(
             model.parameters(),

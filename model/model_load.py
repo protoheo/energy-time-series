@@ -60,8 +60,18 @@ def apply_device(model, device):
         model = model.to(device)
     return model
 
+
 def load_model(device, config, name='LSTM'):
-    if name=='RNN':
-        model = LSTMBase(data_dim, hidden_dim, output_dim, 1)
+    input_dim = 10
+    hidden_dim = 16
+    output_dim = 1
+    layers = 3
+
+    if name == 'RNN':
+        model = RNNBase(input_dim, hidden_dim, output_dim, layers)
+    elif name == 'LSTM':
+        model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
+    else:
+        model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
 
     return apply_device(model, device)

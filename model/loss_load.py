@@ -2,16 +2,19 @@ import torch
 import torch.nn as nn
 
 
-def loss_load(config, device=None):
+def loss_load(device, config):
     criteria = None
     if config["MODEL"]["CRITERIA"] == "CrossEntropy":
-        criteria = torch.nn.CrossEntropyLoss()
+        criteria = nn.CrossEntropyLoss()
 
     elif config["MODEL"]["CRITERIA"] == "FocalLoss":
         criteria = FocalLoss()
 
     elif config["MODEL"]["CRITERIA"] == "DiceLoss":
         criteria = DiceLoss()
+
+    elif config["MODEL"]["CRITERIA"] == "MSELoss":
+        criteria = nn.MSELoss()
 
     else:
         pass
