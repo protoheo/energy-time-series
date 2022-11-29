@@ -10,7 +10,7 @@ DATA:
   PRESET: ''
 
 MODEL:
-  NAME: 'RNN'
+  NAME: 'LSTM'
   CRITERIA: 'MSELoss'
   OPTIMIZER: 'Adam'
   LR: 0.001

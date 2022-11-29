@@ -36,7 +36,7 @@ class Trainer:
         for epoch in range(cfg['TRAIN']['EPOCHS']):
             # train
 
-            train_avg_loss, train_total_loss, train_acc = train_utils.share_loop(
+            train_avg_loss, train_total_loss, train_avg_acc, train_total_acc = train_utils.share_loop(
                 epoch,
                 self.model,
                 self.train_loader,
@@ -46,7 +46,7 @@ class Trainer:
             )
 
             # validation
-            valid_avg_loss, valid_total_loss, valid_acc = train_utils.share_loop(
+            valid_avg_loss, valid_total_loss, valid_avg_acc, valid_total_acc = train_utils.share_loop(
                 epoch,
                 self.model,
                 self.valid_loader,
@@ -61,7 +61,7 @@ class Trainer:
             # list_avg_train_loss.append(train_avg_loss)
             # list_avg_valid_loss.append(valid_avg_loss)
 
-            results = [epoch, train_avg_loss, valid_avg_loss, train_acc, valid_acc]
+            results = [epoch, train_avg_loss, valid_avg_loss, train_avg_acc, valid_avg_acc]
             train_utils.print_result(result=results)  # 결과출력
             self.logger.logging(results)  # 로깅
             self.checkpoint(valid_avg_loss, self.model)  # 체크포인트 저장
@@ -69,13 +69,6 @@ class Trainer:
             if self.early_stopping.early_stop:
                 break
 
-    def inference(self, cls_label_map):
-        all_preds = train_utils.share_loop(model=self.model, data_loader=self.test_loader, mode='test')
-        submit_df = pd.read_csv(GetPaths.get_data_folder('sample_submission.csv'))
-        label = torch.cat(all_preds)
-        submit_df['label'] = label.cpu().numpy()
-        submit_df['label'] = submit_df['label'].apply(lambda x: cls_label_map[x])
-        submit_df.to_csv('./submit.csv', index=False)
 
     @staticmethod
     def cls_name_maps(cls_name):

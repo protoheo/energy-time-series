@@ -31,13 +31,13 @@ class RNNBase(nn.Module):
         self.output_dim = output_dim
         self.layers = layers
 
-        self.lstm = nn.RNN(input_dim, hidden_dim, num_layers=layers)
+        self.rnn = nn.RNN(input_dim, hidden_dim, num_layers=layers)
         self.fc = nn.Linear(hidden_dim, output_dim, bias=True)
 
         # 예측을 위한 함수
 
     def forward(self, x):
-        x, _status = self.lstm(x)
+        x, _status = self.rnn(x)
         x = self.fc(x)
         return x
 
@@ -61,11 +61,12 @@ def apply_device(model, device):
     return model
 
 
-def load_model(device, config, name='LSTM'):
-    input_dim = 10
-    hidden_dim = 16
+def load_model(device, config):
+    name = config['MODEL']['NAME']
+    input_dim = 7
+    hidden_dim = 4
     output_dim = 1
-    layers = 3
+    layers = 2
 
     if name == 'RNN':
         model = RNNBase(input_dim, hidden_dim, output_dim, layers)

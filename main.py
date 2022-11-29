@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from sklearn.preprocessing import MinMaxScaler
 
+from libs.common.common import scaler_save
 from libs.core.trainer import Trainer
 from configs.setting import global_setting
 from model.model_load import load_model
@@ -19,13 +20,13 @@ def main():
     config, device = global_setting('cfg.yaml')
 
     # dataframes
-    data_path = os.path.join(config['DATA_PATH'], config['FILE_NAME'])
+    data_path = os.path.join(config['DATA']['DATA_PATH'], config['DATA']['FILE_NAME'])
     df = pd.read_excel(data_path)
 
     train, valid, test = train_utils.split_dataset(df, config)
 
     # Define Dataset
-    weather_cols = config['X_COLS']
+    weather_cols = config['DATA']['X_COLS']
 
     train_weather_x = train[weather_cols]
     valid_weather_x = valid[weather_cols]
@@ -38,6 +39,7 @@ def main():
     # Set Scaler
     sc_x = MinMaxScaler()
     sc_x.fit(train_weather_x)
+    scaler_save(sc_x)
 
     train_x = sc_x.transform(train_weather_x)
     valid_x = sc_x.transform(valid_weather_x)
@@ -52,7 +54,7 @@ def main():
     test_loader = build_dataloader([test_x, test_y], config=config, mode='test')
 
     # Load Model
-    model = load_model(device, config, name='RNN')
+    model = load_model(device, config)
 
     # loss, optimizer
     criterion = loss_load(config=config, device=device)

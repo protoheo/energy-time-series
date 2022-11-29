@@ -19,10 +19,15 @@ def build_dataloader(data_list, config, mode):
     assert mode in ['train', 'valid', 'test'], 'mode의 입력값은 train, valid, test 중 하나여야 합니다.'
     param = True if mode in ['train', 'valid'] else False
 
-    X_tensor = FloatTensor(data_list[0])
-    Y_tensor = FloatTensor(data_list[1])
+    if mode != 'test':
+        X_tensor = FloatTensor(data_list[0])
+        Y_tensor = FloatTensor(data_list[1])
+        dataset = TensorDataset(X_tensor, Y_tensor)
 
-    dataset = TensorDataset(X_tensor, Y_tensor)
+    else:
+        X_tensor = FloatTensor(data_list[0])
+        dataset = TensorDataset(X_tensor)
+
     dataloader = DataLoader(dataset=dataset, batch_size=config[f'{mode}'.upper()]['BATCH_SIZE'],
                             shuffle=param, drop_last=False)
 

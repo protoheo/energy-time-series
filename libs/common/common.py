@@ -28,3 +28,14 @@ def get_type(path_list, type_list=[]):
         ret_list = path_list
 
     return ret_list
+
+
+def scaler_save(scaler):
+    import joblib
+    # from sklearn.externals import joblib
+    # !conda install -c anaconda scikit-learn
+    scaler_filename = "ckpt/SCALER/scaler.pkl"
+    joblib.dump(scaler, scaler_filename)
+
+    # And now to load...
+    # scaler = joblib.load(scaler_filename)
