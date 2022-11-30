@@ -53,7 +53,7 @@ class SaveCheckPoint:
         cnt = len(os.listdir(save_path))
 
         t = time.strftime("%y%m%d-%H%M")
-        filename = '{}_{}_{}.pth'.format(t, self.opt_name, 'best'+str(cnt))
+        filename = '{}_{}_{}.pth'.format(t, self.opt_name, 'best'+str(cnt).zfill(2))
         save_path = os.path.join(save_path, filename)
 
         if self.verbose:

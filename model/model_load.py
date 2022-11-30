@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import os
 
 
 class LSTMBase(nn.Module):
@@ -63,10 +64,10 @@ def apply_device(model, device):
 
 def load_model(device, config):
     name = config['MODEL']['NAME']
-    input_dim = 7
-    hidden_dim = 4
-    output_dim = 1
-    layers = 2
+    input_dim = config['MODEL_PARAM']['INPUT_DIM']
+    hidden_dim = config['MODEL_PARAM']['HIDDEN_DIM']
+    output_dim = len(config['DATA']['Y_TARGET'])
+    layers = config['MODEL_PARAM']['LAYERS']
 
     if name == 'RNN':
         model = RNNBase(input_dim, hidden_dim, output_dim, layers)
@@ -76,3 +77,30 @@ def load_model(device, config):
         model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
 
     return apply_device(model, device)
+
+
+def load_scaler():
+    import joblib
+    scaler_x = 'ckpt/SCALER/x_scaler.pkl'
+    scaler_y = 'ckpt/SCALER/y_scaler.pkl'
+    sc_x = joblib.load(scaler_x)
+    sc_y = joblib.load(scaler_y)
+
+    return sc_x, sc_y
+
+
+def load_inference(device, config):
+    model = load_model(device, config)
+
+    checkpoint_dir = 'ckpt/{}'.format(config['MODEL']['NAME'])
+    file_name = os.listdir(checkpoint_dir)[-1]
+    print(file_name)
+    checkpoint_path = '{}/{}'.format(checkpoint_dir, file_name)
+
+    ckpt = torch.load(checkpoint_path)
+    model.load_state_dict(ckpt)
+    model.eval()
+
+    return model
+
+

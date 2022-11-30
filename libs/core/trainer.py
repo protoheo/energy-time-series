@@ -68,11 +68,3 @@ class Trainer:
             self.early_stopping(valid_avg_loss)  # 얼리스탑
             if self.early_stopping.early_stop:
                 break
-
-
-    @staticmethod
-    def cls_name_maps(cls_name):
-        cls_name_maps = {}
-        for k, v in enumerate(cls_name):
-            cls_name_maps[k] = v
-        return cls_name_maps

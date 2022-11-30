@@ -11,7 +11,8 @@ def print_result(result):
     """
     epoch, train_loss, valid_loss, train_acc, valid_acc = result
     print(
-        f"[epoch{epoch}] train_loss: {round(train_loss, 3)}, valid_loss: {round(valid_loss, 3)}, train_acc: {train_acc}%, valid_acc: {valid_acc}%"
+        f"[epoch{epoch}] train_loss: {round(train_loss, 3)}, valid_loss: {round(valid_loss, 3)}, "
+        f"train_acc: {round(train_acc, 3)}, valid_acc: {round(valid_acc, 3)}"
     )
 
 
@@ -84,11 +85,12 @@ def share_loop(epoch=10,
     :param mode: 'train', 'valid' 중 하나의 값을 받아 loop를 진행합니다.
     :return: average_loss(float64), total_losses(list), accuracy(float)
     """
-    total_acc = []
-    total_losses = []
+    if mode != 'test':
+        total_acc = []
+        total_losses = []
 
-    opt_name = optimizer[1]
-    optimizer = optimizer[0]
+        opt_name = optimizer[1]
+        optimizer = optimizer[0]
 
     mode = mode.lower()
     progress_bar = tqdm(data_loader, desc=f"{mode} {epoch}")
@@ -138,11 +140,11 @@ def share_loop(epoch=10,
         model.eval()
         with torch.no_grad():
             ret_list = []
-            for data in progress_bar:
+            for data, label in progress_bar:
+                out = model(data).float()
+                acc = get_accuracy(out, label)
 
-                out = model(data).logits
-
-                ret_list.append(out.detach())
+                ret_list.append([acc[0].item(), acc[1].item(), acc[2].item(), acc[3].item()])
         return ret_list
 
     else:

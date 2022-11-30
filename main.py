@@ -27,27 +27,35 @@ def main():
 
     # Define Dataset
     weather_cols = config['DATA']['X_COLS']
+    target_cols = config['DATA']['Y_TARGET']
 
     train_weather_x = train[weather_cols]
     valid_weather_x = valid[weather_cols]
     test_weather_x = test[weather_cols]
 
-    train_weather_y = train[['total']]
-    valid_weather_y = valid[['total']]
-    test_weather_y = test[['total']]
+    train_weather_y = train[target_cols]
+    valid_weather_y = valid[target_cols]
+    test_weather_y = test[target_cols]
 
     # Set Scaler
     sc_x = MinMaxScaler()
     sc_x.fit(train_weather_x)
-    scaler_save(sc_x)
+    sc_y = MinMaxScaler()
+    sc_y.fit(train_weather_y)
+    scaler_save(sc_x, name='x_scaler')
+    scaler_save(sc_y, name='y_scaler')
 
     train_x = sc_x.transform(train_weather_x)
     valid_x = sc_x.transform(valid_weather_x)
     test_x = sc_x.transform(test_weather_x)
 
-    train_y = train_weather_y[['total']].values
-    valid_y = valid_weather_y[['total']].values
-    test_y = test_weather_y[['total']].values
+    # train_y = train_weather_y[['total']].values
+    # valid_y = valid_weather_y[['total']].values
+    # test_y = test_weather_y[['total']].values
+
+    train_y = sc_y.transform(train_weather_y[['total']].values)
+    valid_y = sc_y.transform(valid_weather_y[['total']].values)
+    test_y = sc_y.transform(test_weather_y[['total']].values)
 
     train_loader = build_dataloader([train_x, train_y], config=config, mode="train")
     valid_loader = build_dataloader([valid_x, valid_y], config=config, mode="valid")
@@ -89,7 +97,6 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()
 
 
