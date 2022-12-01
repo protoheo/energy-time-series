@@ -32,6 +32,7 @@ def get_type(path_list, type_list=[]):
 
 def scaler_save(scaler, name='scaler'):
     import joblib
+    os.makedirs('ckpt/SCALER', exist_ok=True)
     # from sklearn.externals import joblib
     # !conda install -c anaconda scikit-learn
     scaler_filename = "ckpt/SCALER/{}.pkl".format(name)

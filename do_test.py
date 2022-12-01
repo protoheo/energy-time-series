@@ -9,7 +9,7 @@ from libs import train_utils
 from dataload.dataloader import build_dataloader
 
 
-def main():
+def main_test():
     # 모델 및 토크나이저
     config, device = global_setting('cfg.yaml')
     model = load_inference(device, config)
@@ -43,4 +43,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main_test()

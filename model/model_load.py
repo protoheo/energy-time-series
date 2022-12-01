@@ -64,7 +64,7 @@ def apply_device(model, device):
 
 def load_model(device, config):
     name = config['MODEL']['NAME']
-    input_dim = config['MODEL_PARAM']['INPUT_DIM']
+    input_dim = len(config['DATA']['X_COLS'])
     hidden_dim = config['MODEL_PARAM']['HIDDEN_DIM']
     output_dim = len(config['DATA']['Y_TARGET'])
     layers = config['MODEL_PARAM']['LAYERS']

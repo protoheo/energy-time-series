@@ -4,13 +4,15 @@ DATA:
   PARTITION: 3
   DATA_PATH: 'res'
   X_COLS: ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility']
-  Y_TARGET: ['total']
-   # ['Vertical', 'Horizontal', 'Module', 'Outdoor']
+  Y_TARGET: ['Vertical', 'Horizontal', 'Module', 'Outdoor']
+  # ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility']
+  # ['Vertical', 'Horizontal', 'Module', 'Outdoor']
+  # ['total']
   FILE_NAME: 'total_set.xlsx'
   PRESET: ''
 
 MODEL:
-  NAME: 'LSTM'
+  NAME: 'RNN'
   CRITERIA: 'MSELoss'
   OPTIMIZER: 'Adam'
   LR: 0.0001
@@ -21,10 +23,10 @@ MODEL:
   #  CHECKPOINT: './ckpt/Huffon-klue-roberta-base-nli/220224-1129_SGD-Nesterov_0.0001.pth' # null == None, 불러올 모델
 
 MODEL_PARAM:
-  INPUT_DIM: 7
-  HIDDEN_DIM: 21
-  OUTPUT_DIM: 1
-  LAYERS: 1
+#  INPUT_DIM: 7
+  HIDDEN_DIM: 13
+#  OUTPUT_DIM: 1
+  LAYERS: 4
 
 TRAIN:
   BATCH_SIZE: 16
