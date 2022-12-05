@@ -16,11 +16,14 @@ class LSTMBase(nn.Module):
                             batch_first=True)
         self.fc = nn.Linear(hidden_dim, output_dim, bias=True)
 
+        self.relu = nn.ReLU()
+
         # 예측을 위한 함수
 
     def forward(self, x):
         x, _status = self.lstm(x)
         x = self.fc(x)
+        x = self.relu(x)
         return x
 
 
@@ -34,12 +37,14 @@ class RNNBase(nn.Module):
 
         self.rnn = nn.RNN(input_dim, hidden_dim, num_layers=layers)
         self.fc = nn.Linear(hidden_dim, output_dim, bias=True)
+        self.relu = nn.ReLU()
 
         # 예측을 위한 함수
 
     def forward(self, x):
         x, _status = self.rnn(x)
         x = self.fc(x)
+        x = self.relu(x)
         return x
 
 
@@ -65,7 +70,7 @@ def apply_device(model, device):
 def load_model(device, config):
     name = config['MODEL']['NAME']
     input_dim = len(config['DATA']['X_COLS'])
-    hidden_dim = config['MODEL_PARAM']['HIDDEN_DIM']
+    hidden_dim = input_dim * 2    # config['MODEL_PARAM']['HIDDEN_DIM']
     output_dim = len(config['DATA']['Y_TARGET'])
     layers = config['MODEL_PARAM']['LAYERS']
 

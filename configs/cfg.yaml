@@ -1,18 +1,28 @@
 SEED: 1113
 
 DATA:
-  PARTITION: 3
+  PARTITION: 3 # 3: train valid test , 2: train test
+  FILE_NAME: 'win_set.xlsx'
   DATA_PATH: 'res'
-  X_COLS: ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility']
-  Y_TARGET: ['Vertical', 'Horizontal', 'Module', 'Outdoor']
+  X_COLS: ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility',
+           'Vertical', 'Horizontal', 'Module', 'Outdoor',
+           'rain_t1', 'wind_t1', 'humidity_t1', 'pressure_t1', 'snow_t1', 'cloud_t1', 'visibility_t1']
+  Y_TARGET: ['Vertical_t1', 'Horizontal_t1', 'Module_t1', 'Outdoor_t1']
+
+  ## No Window
   # ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility']
   # ['Vertical', 'Horizontal', 'Module', 'Outdoor']
   # ['total']
-  FILE_NAME: 'total_set.xlsx'
+
+  ## Window Columns
+  # ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility', 'total', 'rain_t1', 'wind_t1', 'humidity_t1', 'pressure_t1', 'snow_t1', 'cloud_t1', 'visibility_t1']
+  # ['Vertical', 'Horizontal', 'Module', 'Outdoor',  'total', 'Vertical_t1', 'Horizontal_t1', 'Module_t1', 'Outdoor_t1']
+  # ['total_t1']
+
   PRESET: ''
 
 MODEL:
-  NAME: 'RNN'
+  NAME: 'LSTM'
   CRITERIA: 'MSELoss'
   OPTIMIZER: 'Adam'
   LR: 0.0001
@@ -20,11 +30,10 @@ MODEL:
   WEIGHT_DECAY: 0.0001
   N_CLASSES: 1 # class 개수
   CHECKPOINT: null
-  #  CHECKPOINT: './ckpt/Huffon-klue-roberta-base-nli/220224-1129_SGD-Nesterov_0.0001.pth' # null == None, 불러올 모델
 
 MODEL_PARAM:
+#  HIDDEN_DIM:
 #  INPUT_DIM: 7
-  HIDDEN_DIM: 13
 #  OUTPUT_DIM: 1
   LAYERS: 4
 

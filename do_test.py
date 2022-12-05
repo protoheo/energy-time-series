@@ -28,8 +28,8 @@ def main_test():
     test_weather_y = test[target_cols]
 
     sc_x, sc_y = load_scaler()
-    test_x = sc_x.transform(test_weather_x)
-    test_y = sc_y.transform(test_weather_y[['total']].values)
+    test_x = sc_x.transform(test_weather_x.values)
+    test_y = sc_y.transform(test_weather_y.values)
 
     test_loader = build_dataloader([test_x, test_y], config=config, mode='test')
 

@@ -49,9 +49,9 @@ def main():
     valid_x = sc_x.transform(valid_weather_x)
     test_x = sc_x.transform(test_weather_x)
 
-    # train_y = train_weather_y[['total']].values
-    # valid_y = valid_weather_y[['total']].values
-    # test_y = test_weather_y[['total']].values
+    # train_y = train_weather_y[target_cols].values
+    # valid_y = valid_weather_y[target_cols].values
+    # test_y = test_weather_y[target_cols].values
 
     train_y = sc_y.transform(train_weather_y[target_cols].values)
     valid_y = sc_y.transform(valid_weather_y[target_cols].values)
