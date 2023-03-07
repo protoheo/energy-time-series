@@ -17,13 +17,31 @@ def print_result(result):
 
 
 def get_accuracy(y_hat, target):
+    esp = 0.000001
+    target += esp
 
     diff = torch.abs(y_hat - target)
 
     mae = torch.mean(diff)
     mse = torch.mean(torch.pow(diff, 2))
     rmse = torch.sqrt(mse)
-    mape = torch.mean(diff/y_hat)*100
+    mape = torch.mean(torch.abs((target - y_hat) / target)) * 100
+
+    acc = [mae.item(), mse.item(), rmse.item(), mape.item()]
+
+    return acc
+
+
+def get_accuracy_np(y_hat, target):
+    esp = 0.000001
+    target += esp
+
+    diff = np.abs(y_hat - target)
+
+    mae = np.mean(diff)
+    mse = np.mean(np.power(diff, 2))
+    rmse = np.sqrt(mse)
+    mape = np.mean(np.abs((target - y_hat) / target)) * 100
 
     acc = [mae, mse, rmse, mape]
 
@@ -85,12 +103,14 @@ def share_loop(epoch=10,
     :param mode: 'train', 'valid' 중 하나의 값을 받아 loop를 진행합니다.
     :return: average_loss(float64), total_losses(list), accuracy(float)
     """
-    if mode != 'test':
-        total_acc = []
-        total_losses = []
+    total_acc = []
+    total_losses = []
 
+    if mode != 'test':
         opt_name = optimizer[1]
         optimizer = optimizer[0]
+    else:
+        opt_name = None
 
     mode = mode.lower()
     progress_bar = tqdm(data_loader, desc=f"{mode} {epoch}")
@@ -118,9 +138,9 @@ def share_loop(epoch=10,
 
             # accuracy 계산
             acc = get_accuracy(out, label)
-            total_acc.append(acc[0].item())
+            total_acc.append(acc[0])
 
-            progress_bar.set_postfix({'loss': loss.item(), 'acc': acc[0].item()})
+            progress_bar.set_postfix({'loss': loss.item(), 'acc': acc[0]})
 
     elif mode == 'valid':
         model.eval()
@@ -132,9 +152,9 @@ def share_loop(epoch=10,
 
                 total_losses.append(loss.item())
                 acc = get_accuracy(out, label)
-                total_acc.append(acc[0].item())
+                total_acc.append(acc[0])
 
-                progress_bar.set_postfix({'loss': loss.item(), 'acc': acc[0].item()})
+                progress_bar.set_postfix({'loss': loss.item(), 'acc': acc[0]})
 
     elif mode == 'test':
         model.eval()
@@ -144,7 +164,7 @@ def share_loop(epoch=10,
                 out = model(data).float()
                 acc = get_accuracy(out, label)
 
-                ret_list.append([acc[0].item(), acc[1].item(), acc[2].item(), acc[3].item()])
+                ret_list.append(acc)
         return ret_list
 
     else:
@@ -155,3 +175,27 @@ def share_loop(epoch=10,
 
     return avg_loss, total_losses, avg_acc, total_acc
 
+
+def ensemble_loop(epoch=10,
+                  config=None,
+                  model=None,
+                  data_loader=None,
+                  mode="ensemble"):
+    model1 = model[0]
+    model2 = model[1]
+
+    progress_bar = tqdm(data_loader, desc=f"{mode} {epoch}")
+    model1.eval()
+    model2.eval()
+
+    cfg1 = config[0]
+    cfg2 = config[1]
+
+    with torch.no_grad():
+        ret_list = []
+        for data, label in progress_bar:
+            out = model(data).float()
+            acc = get_accuracy(out, label)
+
+            ret_list.append(acc)
+    return ret_list

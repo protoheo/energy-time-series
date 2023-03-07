@@ -40,3 +40,13 @@ class Ensemble:
 
         df = pd.DataFrame(ret_list, columns=['mae', 'mse', 'rmse', 'mape'])
         print(df.describe().loc['mean'])
+
+
+def load_scaler_ensemble():
+    import joblib
+    scaler_x = 'ckpt/window_weather-sensor/SCALER/x_scaler.pkl'
+    scaler_y = 'ckpt/window_sensor-target/SCALER/y_scaler.pkl'
+    sc_x = joblib.load(scaler_x)
+    sc_y = joblib.load(scaler_y)
+
+    return sc_x, sc_y

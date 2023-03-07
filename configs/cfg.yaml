@@ -4,10 +4,10 @@ DATA:
   PARTITION: 3 # 3: train valid test , 2: train test
   FILE_NAME: 'win_set.xlsx'
   DATA_PATH: 'res'
-  X_COLS: ['Vertical', 'Horizontal', 'Module', 'Outdoor',  'total', 'Vertical_t1', 'Horizontal_t1', 'Module_t1', 'Outdoor_t1']
-  Y_TARGET: ['total_t1']
+  X_COLS: ['Vertical', 'Horizontal', 'Module', 'Outdoor']
+  Y_TARGET: ['total']
 
-  ## No Window
+  ## Window
   # ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility']
   # ['Vertical', 'Horizontal', 'Module', 'Outdoor']
   # ['total']
@@ -16,8 +16,6 @@ DATA:
   # ['rain', 'wind', 'humidity', 'pressure', 'snow', 'cloud', 'visibility', 'total', 'rain_t1', 'wind_t1', 'humidity_t1', 'pressure_t1', 'snow_t1', 'cloud_t1', 'visibility_t1']
   # ['Vertical', 'Horizontal', 'Module', 'Outdoor',  'total', 'Vertical_t1', 'Horizontal_t1', 'Module_t1', 'Outdoor_t1']
   # ['total_t1']
-
-  PRESET: ''
 
 MODEL:
   NAME: 'LSTM'

@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+from libs.core.ensemble import load_scaler_ensemble
 from libs.core.tester import Tester
 from configs.setting import global_setting
 from model.model_load import load_scaler, load_inference
@@ -46,8 +47,8 @@ def ensemble_test():
     from libs.core.ensemble import Ensemble
 
     # 모델 및 토크나이저
-    config1, device = global_setting('cfg1.yaml')
-    config2, _ = global_setting('cfg2.yaml')
+    config1, device = global_setting('cfg1.yaml', 'history')
+    config2, _ = global_setting('cfg2.yaml', 'history')
 
     model1 = load_inference(device, config1)
     model2 = load_inference(device, config2)
@@ -65,7 +66,7 @@ def ensemble_test():
     test_weather_x = test[weather_cols]
     test_weather_y = test[target_cols]
 
-    sc_x, sc_y = load_scaler()
+    sc_x, sc_y = load_scaler_ensemble()
     test_x = sc_x.transform(test_weather_x.values)
     test_y = sc_y.transform(test_weather_y.values)
 

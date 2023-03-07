@@ -5,8 +5,13 @@ import numpy as np
 import random
 
 
-def global_setting(config_file='cfg.yaml'):
-    config = load_config(GetPaths().get_configs_folder(config_file))
+def global_setting(config_file='cfg.yaml', config_dir=None):
+    if config_dir is None:
+        config_path = GetPaths().get_configs_folder(config_file)
+    else:
+        config_path = config_dir+'/'+config_file
+
+    config = load_config(config_path)
     torch.manual_seed(config["SEED"])
     np.random.seed(config["SEED"])
     random.seed(config["SEED"])

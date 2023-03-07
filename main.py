@@ -39,9 +39,9 @@ def main():
 
     # Set Scaler
     sc_x = MinMaxScaler()
-    sc_x.fit(train_weather_x)
+    sc_x.fit(train_weather_x.values)
     sc_y = MinMaxScaler()
-    sc_y.fit(train_weather_y)
+    sc_y.fit(train_weather_y.values)
     scaler_save(sc_x, name='x_scaler')
     scaler_save(sc_y, name='y_scaler')
 
