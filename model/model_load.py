@@ -5,17 +5,17 @@ import os
 
 class LSTMBase(nn.Module):
     # # 기본변수, layer를 초기화해주는 생성자
-    def __init__(self, input_dim, hidden_dim, output_dim, layers):
+    def __init__(self, input_dim, hidden_size, output_dim, layers):
         super(LSTMBase, self).__init__()
-        self.hidden_dim = hidden_dim
         self.output_dim = output_dim
         self.layers = layers
 
-        self.lstm = nn.LSTM(input_dim, hidden_dim,
+        self.lstm = nn.LSTM(input_dim,
+                            hidden_size=hidden_size,
                             num_layers=layers,
                             batch_first=True)
-        self.fc = nn.Linear(hidden_dim, output_dim, bias=True)
-
+        self.fc = nn.Linear(hidden_size, output_dim, bias=True)
+        self.sigmoid = nn.Sigmoid()
         self.relu = nn.ReLU()
 
         # 예측을 위한 함수
@@ -23,6 +23,7 @@ class LSTMBase(nn.Module):
     def forward(self, x):
         x, _status = self.lstm(x)
         x = self.fc(x)
+        x = self.sigmoid(x)
         x = self.relu(x)
         return x
 
@@ -70,7 +71,7 @@ def apply_device(model, device):
 def load_model(device, config):
     name = config['MODEL']['NAME']
     input_dim = len(config['DATA']['X_COLS'])
-    hidden_dim = input_dim * 2    # config['MODEL_PARAM']['HIDDEN_DIM']
+    hidden_dim = input_dim    # config['MODEL_PARAM']['HIDDEN_DIM']
     output_dim = len(config['DATA']['Y_TARGET'])
     layers = config['MODEL_PARAM']['LAYERS']
 
