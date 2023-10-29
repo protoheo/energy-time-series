@@ -17,33 +17,40 @@ def print_result(result):
 
 
 def get_accuracy(y_hat, target):
-    esp = 0.000001
-    target += esp
+    maeloss = torch.nn.L1Loss()
+    mseloss = torch.nn.MSELoss()
+    y_len = len(y_hat[0])
+    if y_len == 1:
+        mae = maeloss(y_hat, target)
+        mse = mseloss(y_hat, target)
+        rmse = torch.sqrt(mse)
 
-    diff = torch.abs(y_hat - target)
+        acc = [mae.item(), mse.item(), rmse.item(), 0]
 
-    mae = torch.mean(diff)
-    mse = torch.mean(torch.pow(diff, 2))
-    rmse = torch.sqrt(mse)
-    mape = torch.mean(torch.abs((target - y_hat) / target)) * 100
+    else:
+        acc = []
+        for i in range(y_len):
+            mae = maeloss(y_hat[:, i], target[:, i])
+            mse = mseloss(y_hat[:, i], target[:, i])
+            rmse = torch.sqrt(mse)
+            mape = 0
 
-    acc = [mae.item(), mse.item(), rmse.item(), mape.item()]
+            tmp = [mae.item(), mse.item(), rmse.item(), mape]
+
+            acc.append(tmp)
 
     return acc
 
 
 def get_accuracy_np(y_hat, target):
-    esp = 0.000001
-    target += esp
 
     diff = np.abs(y_hat - target)
 
     mae = np.mean(diff)
     mse = np.mean(np.power(diff, 2))
     rmse = np.sqrt(mse)
-    mape = np.mean(np.abs((target - y_hat) / target)) * 100
 
-    acc = [mae, mse, rmse, mape]
+    acc = [mae, mse, rmse]
 
     return acc
 
@@ -92,9 +99,11 @@ def share_loop(epoch=10,
                data_loader=None,
                criterion=None,
                optimizer=None,
+               device=None,
                mode="train"):
     """
     학습과 검증에서 사용하는 loop 입니다. mode를 이용하여 조정합니다.
+    :param device:
     :param epoch:
     :param model:
     :param data_loader:
@@ -117,10 +126,15 @@ def share_loop(epoch=10,
     if mode == "train":
         model.train()
         for data, label in progress_bar:
-            out = model(data).float()
-            # label = label.float()
+            # Apply Device
+            data = data.to(device)
+            label = label.to(device)
 
+            model.reset_hidden_state()
+            out = model(data)
+            # label = label.float()
             loss = criterion(out, label)
+
             # 역전파
             optimizer.zero_grad()
             loss.backward()
@@ -163,6 +177,7 @@ def share_loop(epoch=10,
             for data, label in progress_bar:
                 out = model(data).float()
                 acc = get_accuracy(out, label)
+                print(acc)
 
                 ret_list.append(acc)
         return ret_list
@@ -176,11 +191,38 @@ def share_loop(epoch=10,
     return avg_loss, total_losses, avg_acc, total_acc
 
 
-def ensemble_loop(epoch=10,
+def ensemble_loop(epoch=1,
                   config=None,
                   model=None,
                   data_loader=None,
                   mode="ensemble"):
+    model1 = model[0]
+    model2 = model[1]
+
+    progress_bar = tqdm(data_loader, desc=f"{mode} {epoch}")
+    model1.eval()
+    model2.eval()
+
+    # cfg1 = config[0]
+    # cfg2 = config[1]
+
+    with torch.no_grad():
+        ret_list = []
+        for data, label in progress_bar:
+            mid = model1(data).float()
+            out = model2(mid).float()
+
+            acc = get_accuracy(out, label)
+
+            ret_list.append(acc)
+    return ret_list
+
+
+def ensemble_merge(epoch=1,
+                   config=None,
+                   model=None,
+                   data_loader=None,
+                   mode="ensemble"):
     model1 = model[0]
     model2 = model[1]
 
@@ -194,7 +236,49 @@ def ensemble_loop(epoch=10,
     with torch.no_grad():
         ret_list = []
         for data, label in progress_bar:
-            out = model(data).float()
+            out1 = model1(data[:, cfg1['DATA']['ENSEMBLE_1']]).float()
+            out2 = model2(data[:, cfg2['DATA']['ENSEMBLE_2']]).float()
+
+            out = 0.5 * out1 + 0.5 * out2
+            acc = get_accuracy(out, label)
+
+            ret_list.append(acc)
+    return ret_list
+
+
+def ensemble_total(epoch=1,
+                   config=None,
+                   model=None,
+                   data_loader=None,
+                   mode="ensemble"):
+    model1 = model[0]
+    model2 = model[1]
+    model3 = model[2]
+    model4 = model[3]
+
+    progress_bar = tqdm(data_loader, desc=f"{mode} {epoch}")
+    model1.eval()
+    model2.eval()
+    model3.eval()
+    model4.eval()
+
+    cfg1 = config[0]
+    cfg2 = config[1]
+    cfg3 = config[2]
+    cfg4 = config[3]
+
+    with torch.no_grad():
+        ret_list = []
+        for data, label in progress_bar:
+            out1 = model1(data[:, cfg1['DATA']['ENSEMBLE_1']]).float()
+            out2 = model2(data[:, cfg2['DATA']['ENSEMBLE_2']]).float()
+
+            mid = 0.5 * out1 + 0.5 * out2
+
+            out1 = model3(mid[:, cfg3['DATA']['ENSEMBLE_1']]).float()
+            out2 = model4(mid[:, cfg4['DATA']['ENSEMBLE_2']]).float()
+
+            out = 0.5 * out1 + 0.5 * out2
             acc = get_accuracy(out, label)
 
             ret_list.append(acc)

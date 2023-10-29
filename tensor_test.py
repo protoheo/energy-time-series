@@ -1,25 +1,54 @@
 import pandas as pd
 import os
+import joblib
+from torch import FloatTensor
 
-from libs.core.ensemble import load_scaler_ensemble
-from libs.core.tester import Tester
 from configs.setting import global_setting
 from libs.train_utils import get_accuracy
 from model.model_load import load_scaler, load_inference, inference_ensemble
 from libs import train_utils
 
-from dataload.dataloader import build_testloader
+import torch
 
 
-def scaler_data_test(dir_path, df, config):
+def ensemble_data_test(dir_path, df, config, num):
+    x_cols = config['DATA']['X_COLS']
+    y_cols = config['DATA']['Y_TARGET']
+
+    test_x = df[x_cols]
+    test_y = df[y_cols]
+
+    # Set Scaler
+    scaler_x = 'ckpt/{}/SCALER/x_scaler.pkl'.format(dir_path)
+    scaler_y = 'ckpt/{}/SCALER/y_scaler.pkl'.format(dir_path)
+    sc_x = joblib.load(scaler_x)
+    sc_y = joblib.load(scaler_y)
+
+    # Scale transform
+    ensemble_cols = config['DATA']['ENSEMBLE_{}'.format(str(num))]
+
+    tes_x = sc_x.transform(test_x)[:, ensemble_cols]
+    tes_y = sc_y.transform(test_y)
+    X_tensor = FloatTensor(tes_x)
+    Y_tensor = FloatTensor(tes_y)
+
+    return X_tensor, Y_tensor, [sc_x, sc_y]
+
+
+def scaler_data_test(dir_path, df, config, full=False):
     import joblib
     from torch import FloatTensor
 
     x_cols = config['DATA']['X_COLS']
     y_cols = config['DATA']['Y_TARGET']
 
-    test_x = df[x_cols]
-    test_y = df[y_cols]
+    if full:
+        test = df
+    else:
+        _, _, test = train_utils.split_dataset(df, config)
+
+    test_x = test[x_cols]
+    test_y = test[y_cols]
 
     # Set Scaler
     scaler_x = 'ckpt/{}/SCALER/x_scaler.pkl'.format(dir_path)
@@ -35,9 +64,9 @@ def scaler_data_test(dir_path, df, config):
     return X_tensor, Y_tensor, [sc_x, sc_y]
 
 
-def main_test():
+def baseline_test(make_predict=False):
     # 모델 및 토크나이저
-    st1_dir = 'baseline'
+    st1_dir = 'ws_t'
     config, device = global_setting('cfg.yaml', 'ckpt/{}'.format(st1_dir))
     model = inference_ensemble(st1_dir, device, config)
 
@@ -52,11 +81,11 @@ def main_test():
     print(get_accuracy(outputs, test_y))
 
 
-def ensemble_test():
+def stage_test():
     from libs.core.ensemble import Ensemble
 
     st1_dir = 't2_2s_ws'
-    st2_dir = '2stage_s_t'
+    st2_dir = '2s_st'
 
     # 모델 및 토크나이저
     config1, device = global_setting('cfg.yaml', 'ckpt/{}'.format(st1_dir))
@@ -69,69 +98,55 @@ def ensemble_test():
     data_path = os.path.join(config1['DATA']['DATA_PATH'], config1['DATA']['FILE_NAME'])
     df = pd.read_excel(data_path)
 
-    train, valid, test = train_utils.split_dataset(df, config1)
+    test_x, _, _ = scaler_data_test(st1_dir, df, config1)
+    _, test_y, sc = scaler_data_test(st2_dir, df, config2)
 
-    # Define Dataset
-    weather_cols = config1['DATA']['X_COLS']
-    target_cols = config2['DATA']['Y_TARGET']
+    mid = model1(test_x)
+    outputs = model2(mid)
 
-    test_weather_x = test[weather_cols]
-    test_weather_y = test[target_cols]
-
-    sc_x, sc_y = load_scaler_ensemble(st1_dir, st2_dir)
-    test_x = sc_x.transform(test_weather_x.values)
-    test_y = sc_y.transform(test_weather_y.values)
-
-    test_loader = build_testloader([test_x, test_y])
-
-    test = Ensemble(config=[config1, config2],
-                    model=[model1, model2],
-                    test_loader=test_loader,
-                    device=device,
-                    scaler=sc_y)
-
-    test.test()
+    print(get_accuracy(outputs, test_y))
 
 
-def ensemble_test_v1():
+def stage_test_v2(make_predict=False):
     from libs.core.ensemble import Ensemble
 
-    st1_dir = 't2_2s_ws'
-    st2_dir = '2stage_s_t'
+    st1_dir = '2s_ws'
+    st2_dir = 'ws_t'
 
     # 모델 및 토크나이저
     config1, device = global_setting('cfg.yaml', 'ckpt/{}'.format(st1_dir))
     config2, _ = global_setting('cfg.yaml', 'ckpt/{}'.format(st2_dir))
 
-    model1 = inference_ensemble(st1_dir, device, config1, False)
-    model2 = inference_ensemble(st2_dir, device, config2, False)
+    model1 = inference_ensemble(st1_dir, device, config1)
+    model2 = inference_ensemble(st2_dir, device, config2)
 
     # dataframes
     data_path = os.path.join(config1['DATA']['DATA_PATH'], config1['DATA']['FILE_NAME'])
     df = pd.read_excel(data_path)
 
-    train, valid, test = train_utils.split_dataset(df, config1)
+    test_x, _, _ = scaler_data_test(st1_dir, df, config1)
+    mid_x, test_y, sc = scaler_data_test(st2_dir, df, config2)
 
-    # Define Dataset
-    weather_cols = config1['DATA']['X_COLS']
-    target_cols = config2['DATA']['Y_TARGET']
+    mid = model1(test_x)
 
-    test_weather_x = test[weather_cols]
-    test_weather_y = test[target_cols]
+    mid2 = torch.cat((test_x, mid), 1)
+    outputs = model2(mid2)
 
-    sc_x, sc_y = load_scaler_ensemble(st1_dir, st2_dir)
-    test_x = sc_x.transform(test_weather_x.values)
-    test_y = sc_y.transform(test_weather_y.values)
+    print(get_accuracy(outputs, test_y))
+    if make_predict:
+        testX, _, _ = scaler_data_test(st1_dir, df, config1, full=True)
+        mid = model1(testX)
+        mid2 = torch.cat((testX, mid), 1)
+        outputs = model2(mid2).detach().numpy()
+        inv_pred = sc[1].inverse_transform(outputs)
 
-    test_loader = build_testloader([test_x, test_y])
+        testY = df[config2['DATA']['Y_TARGET']]
 
-    test = Ensemble(config=[config1, config2],
-                    model=[model1, model2],
-                    test_loader=test_loader,
-                    device=device,
-                    scaler=sc_y)
+        # save_df = testY
+        # save_df['pred'] = inv_pred
+        # save_df.to_excel('2stage_lstm_ws_t2.xlsx', index=False)
 
-    test.merge_test()
+        pass
 
 
 def ensemble_test_total():
@@ -157,33 +172,28 @@ def ensemble_test_total():
     data_path = os.path.join(config1['DATA']['DATA_PATH'], config1['DATA']['FILE_NAME'])
     df = pd.read_excel(data_path)
 
-    train, valid, test = train_utils.split_dataset(df, config1)
+    test_x1, _, sc1 = ensemble_data_test(st1_dir, df, config1, 1)
+    test_x2, _, sc2 = ensemble_data_test(st2_dir, df, config2, 2)
+    _, test_y, sc3 = ensemble_data_test(st3_dir, df, config3, 1)
+    _, test_y, sc4 = ensemble_data_test(st4_dir, df, config4, 2)
 
-    # Define Dataset
-    weather_cols = config1['DATA']['X_COLS']
-    target_cols = config3['DATA']['Y_TARGET']
+    pred_1 = model1(test_x1)
+    pred_2 = model2(test_x2)
+    pred_mid = 0.5 * pred_1 + 0.5 * pred_2
 
-    test_weather_x = test[weather_cols]
-    test_weather_y = test[target_cols]
+    ens_col1 = config3['DATA']['ENSEMBLE_1']
+    ens_col2 = config4['DATA']['ENSEMBLE_2']
+    pred_3 = model3(pred_mid[:, ens_col1])
+    pred_4 = model4(pred_mid[:, ens_col2])
 
-    sc_x, sc_y = load_scaler_ensemble(st1_dir, st3_dir)
-    test_x = sc_x.transform(test_weather_x.values)
-    test_y = sc_y.transform(test_weather_y.values)
+    outputs = 0.5 * pred_3 + 0.5 * pred_4
 
-    test_loader = build_testloader([test_x, test_y])
-
-    test = Ensemble(config=[config1, config2, config3, config4],
-                    model=[model1, model2],
-                    test_loader=test_loader,
-                    device=device,
-                    scaler=sc_y)
-
-    test.total_test(stage_model=[model3, model4])
+    print(get_accuracy(outputs, test_y))
 
 
 if __name__ == '__main__':
-    main_test()
-    # ensemble_test()
-    # ensemble_test_v1()
-
+    # baseline_test()
+    # stage_test()
     # ensemble_test_total()
+
+    stage_test_v2(make_predict=True)

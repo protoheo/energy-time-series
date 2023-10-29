@@ -12,6 +12,11 @@ class Ensemble:
 
         self.config1 = config[0]
         self.config2 = config[1]
+        try:
+            self.config3 = config[2]
+            self.config4 = config[3]
+        except:
+            pass
 
         self.model1 = model[0]
         self.model2 = model[1]
@@ -20,32 +25,43 @@ class Ensemble:
         self.device = device
 
     def test(self):
-        cfg = self.config
-        ret_list = []
 
-        ret_list = train_utils.share_loop(
+        ret_list = train_utils.ensemble_loop(
             epoch=0,
-            model=self.model,
+            model=[self.model1, self.model2],
             data_loader=self.test_loader,
-            mode="test"
+            mode="ensemble"
         )
+        print(ret_list)
 
-        # TBD: list에 담기
-        # list_train_loss.extend(train_total_loss)
-        # list_valid_loss.extend(valid_total_loss)
-        # list_avg_train_loss.append(train_avg_loss)
-        # list_avg_valid_loss.append(valid_avg_loss)
+    def merge_test(self):
+        ret_list = train_utils.ensemble_merge(
+            epoch=0,
+            config=[self.config1, self.config2],
+            model=[self.model1, self.model2],
+            data_loader=self.test_loader,
+            mode="ensemble"
+        )
+        print(ret_list)
 
-        # train_utils.print_result(result=results)  # 결과출력
+    def total_test(self, stage_model):
 
-        df = pd.DataFrame(ret_list, columns=['mae', 'mse', 'rmse', 'mape'])
-        print(df.describe().loc['mean'])
+        st_model1 = stage_model[0]
+        st_model2 = stage_model[1]
+        ret_list = train_utils.ensemble_total(
+            epoch=0,
+            config=[self.config1, self.config2, self.config3, self.config4],
+            model=[self.model1, self.model2, st_model1, st_model2],
+            data_loader=self.test_loader,
+            mode="ensemble"
+        )
+        print(ret_list)
 
 
-def load_scaler_ensemble():
+def load_scaler_ensemble(st1_dir, st2_dir):
     import joblib
-    scaler_x = 'ckpt/window_weather-sensor/SCALER/x_scaler.pkl'
-    scaler_y = 'ckpt/window_sensor-target/SCALER/y_scaler.pkl'
+    scaler_x = 'ckpt/{}/SCALER/x_scaler.pkl'.format(st1_dir)
+    scaler_y = 'ckpt/{}/SCALER/y_scaler.pkl'.format(st2_dir)
     sc_x = joblib.load(scaler_x)
     sc_y = joblib.load(scaler_y)
 

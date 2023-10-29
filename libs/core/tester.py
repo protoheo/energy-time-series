@@ -17,8 +17,6 @@ class Tester:
         self.scaler = scaler
 
     def test(self):
-        cfg = self.config
-        ret_list = []
 
         ret_list = train_utils.share_loop(
             epoch=0,
@@ -34,6 +32,7 @@ class Tester:
         # list_avg_valid_loss.append(valid_avg_loss)
 
         # train_utils.print_result(result=results)  # 결과출력
-
-        df = pd.DataFrame(ret_list, columns=['mae', 'mse', 'rmse', 'mape'])
-        print(df.describe().loc['mean'])
+        #
+        # df = pd.DataFrame(ret_list, columns=['mae', 'mse', 'rmse', 'mape'])
+        # print(df.describe().loc['mean'])
+        print(ret_list)

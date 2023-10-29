@@ -27,3 +27,17 @@ def build_dataloader(data_list, config, mode):
                             shuffle=param, drop_last=False)
 
     return dataloader
+
+
+def build_testloader(data_list):
+
+    param = False
+
+    X_tensor = FloatTensor(data_list[0])
+    Y_tensor = FloatTensor(data_list[1])
+    dataset = TensorDataset(X_tensor, Y_tensor)
+
+    dataloader = DataLoader(dataset=dataset, batch_size=len(X_tensor),
+                            shuffle=param, drop_last=False)
+
+    return dataloader

@@ -42,6 +42,7 @@ class Trainer:
                 self.train_loader,
                 self.criterion,
                 self.optimizer,
+                self.device,
                 mode="train"
             )
 
@@ -52,6 +53,7 @@ class Trainer:
                 self.valid_loader,
                 self.criterion,
                 self.optimizer,
+                self.device,
                 mode="valid"
             )
 
