@@ -43,6 +43,7 @@ class Trainer:
                 self.criterion,
                 self.optimizer,
                 self.device,
+                batch_size=cfg['TRAIN']['BATCH_SIZE'],
                 mode="train"
             )
 
@@ -54,6 +55,7 @@ class Trainer:
                 self.criterion,
                 self.optimizer,
                 self.device,
+                batch_size=cfg['TRAIN']['BATCH_SIZE'],
                 mode="valid"
             )
 

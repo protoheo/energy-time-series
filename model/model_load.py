@@ -3,6 +3,8 @@ import torch.nn as nn
 import os
 import torch.nn.functional as F
 
+from model.dula_stage import DualStage
+
 
 class LSTMBase(nn.Module):
     # # 기본변수, layer를 초기화해주는 생성자
@@ -60,27 +62,27 @@ class BiLSTMAttention(nn.Module):
             torch.zeros(self.layers, self.seq_len, self.hidden_size)
         )
 
-    def attention_net(self, lstm_output, final_state):
+    def attention_net(self, lstm_output, final_states):
+        print(lstm_output.size())
+        final_state = final_states[0]
         tmp = []
         for idx in range(len(final_state)):
             hidden = final_state[idx].reshape(-1, 1)
             attn_weight = torch.mm(lstm_output, hidden)
-
             tmp.append(attn_weight)
-        attn_weights = torch.cat((tmp[0], tmp[1]), dim=1)
-        print(attn_weights)
-        print(attn_weights.size())
 
+        attn_weights = torch.cat((tmp[0], tmp[1]), dim=1)
         soft_attn_weights = F.softmax(attn_weights, 1)
-        print(soft_attn_weights)
+
+        sajfldsjfl
 
         new_hidden_state = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
 
         return new_hidden_state
 
     def forward(self, x):
-        x, h = self.lstm(x)
-        x = self.attention_net(x, h[0])
+        x, state = self.lstm(x)
+        x = self.attention_net(x, state)
         # x = self.attention_net(x, x.transpose(0, 1)[-1])
         x = self.fc(x)
 
@@ -121,7 +123,7 @@ def load_model(device, config, ensemble=False):
     if name == 'LSTM':
         model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
     elif name == 'LSTM-Attention':
-        model = BiLSTMAttention(input_dim, hidden_dim, output_dim, layers)
+        model = DualStage(input_dim, hidden_dim, output_dim, layers)
     else:
         model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
 

@@ -100,9 +100,11 @@ def share_loop(epoch=10,
                criterion=None,
                optimizer=None,
                device=None,
+               batch_size=None,
                mode="train"):
     """
     학습과 검증에서 사용하는 loop 입니다. mode를 이용하여 조정합니다.
+    :param batch_size:
     :param device:
     :param epoch:
     :param model:
@@ -130,8 +132,9 @@ def share_loop(epoch=10,
             data = data.to(device)
             label = label.to(device)
 
-            model.reset_hidden_state()
-            out = model(data)
+            h = model.init_hidden(batch_size)
+
+            out = model(data, h)
             # label = label.float()
             loss = criterion(out, label)
 
