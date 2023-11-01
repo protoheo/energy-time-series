@@ -132,9 +132,7 @@ def share_loop(epoch=10,
             data = data.to(device)
             label = label.to(device)
 
-            h = model.init_hidden(batch_size)
-
-            out = model(data, h)
+            out = model(data)
             # label = label.float()
             loss = criterion(out, label)
 

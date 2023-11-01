@@ -25,10 +25,10 @@ class EncoderLSTM(nn.Module):
 
 
 class BahdanauDecoder(nn.Module):
-    def __init__(self, hidden_size, output_size, n_layers=1, drop_prob=0.1):
+    def __init__(self, input_size, hidden_size, n_layers=1, drop_prob=0.1):
         super(BahdanauDecoder, self).__init__()
         self.hidden_size = hidden_size
-        self.output_size = output_size
+        self.input_size = input_size
         self.n_layers = n_layers
         self.drop_prob = drop_prob
 
@@ -45,7 +45,7 @@ class BahdanauDecoder(nn.Module):
     def forward(self, inputs, hidden, encoder_outputs):
         encoder_outputs = encoder_outputs.squeeze()
         # Embed input words
-        embedded = self.embedding(inputs.long()).view(1, -1)
+        embedded = self.embedding(inputs).view(1, -1)
         embedded = self.dropout(embedded)
 
         # Calculating Alignment Scores

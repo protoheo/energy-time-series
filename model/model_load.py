@@ -3,6 +3,7 @@ import torch.nn as nn
 import os
 import torch.nn.functional as F
 
+from model.autoencoder import AutoEncForecast
 from model.dula_stage import DualStage
 
 
@@ -123,7 +124,7 @@ def load_model(device, config, ensemble=False):
     if name == 'LSTM':
         model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
     elif name == 'LSTM-Attention':
-        model = DualStage(input_dim, hidden_dim, output_dim, layers)
+        model = AutoEncForecast(input_dim, hidden_dim, output_dim, layers)
     else:
         model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
 
