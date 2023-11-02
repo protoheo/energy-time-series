@@ -38,9 +38,9 @@ class LSTMBase(nn.Module):
         return x
 
 
-class BiLSTMAttention(nn.Module):
+class BiLSTM(nn.Module):
     def __init__(self, input_dim, hidden_size, output_dim, layers):
-        super(BiLSTMAttention, self).__init__()
+        super(BiLSTM, self).__init__()
         self.output_dim = output_dim
         self.layers = layers
         self.seq_len = input_dim
@@ -49,7 +49,7 @@ class BiLSTMAttention(nn.Module):
                             hidden_size=hidden_size,
                             num_layers=layers,
                             batch_first=True,
-                            bidirectional=False
+                            bidirectional=True
                             )
 
         self.fc = nn.Linear(hidden_size, output_dim, bias=True)
@@ -57,29 +57,11 @@ class BiLSTMAttention(nn.Module):
         self.relu = nn.ReLU()
 
         # 예측을 위한 함수
-    def reset_hidden_state(self):
-        self.hidden = (
+    def init_hidden(self):
+        return (
             torch.zeros(self.layers, self.seq_len, self.hidden_size),
             torch.zeros(self.layers, self.seq_len, self.hidden_size)
         )
-
-    def attention_net(self, lstm_output, final_states):
-        print(lstm_output.size())
-        final_state = final_states[0]
-        tmp = []
-        for idx in range(len(final_state)):
-            hidden = final_state[idx].reshape(-1, 1)
-            attn_weight = torch.mm(lstm_output, hidden)
-            tmp.append(attn_weight)
-
-        attn_weights = torch.cat((tmp[0], tmp[1]), dim=1)
-        soft_attn_weights = F.softmax(attn_weights, 1)
-
-        sajfldsjfl
-
-        new_hidden_state = torch.bmm(lstm_output.transpose(1, 2), soft_attn_weights.unsqueeze(2)).squeeze(2)
-
-        return new_hidden_state
 
     def forward(self, x):
         x, state = self.lstm(x)
@@ -123,6 +105,8 @@ def load_model(device, config, ensemble=False):
 
     if name == 'LSTM':
         model = LSTMBase(input_dim, hidden_dim, output_dim, layers)
+    elif name == 'LSTM-Attention':
+        model = BiLSTM(input_dim, hidden_dim, output_dim, layers)
     elif name == 'LSTM-Attention':
         model = AutoEncForecast(input_dim, hidden_dim, output_dim, layers)
     else:

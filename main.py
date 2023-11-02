@@ -126,8 +126,7 @@ def ensemble_main():
     scaler_save(sc_x, name='x_scaler')
     scaler_save(sc_y, name='y_scaler')
 
-    ensemble_cols = config['DATA']['ENSEMBLE_1']
-
+    ensemble_cols = config['DATA']['ENSEMBLE_2']
     train_x = sc_x.transform(train_weather_x)[:, ensemble_cols]
     valid_x = sc_x.transform(valid_weather_x)[:, ensemble_cols]
     test_x = sc_x.transform(test_weather_x)[:, ensemble_cols]
@@ -179,14 +178,9 @@ def ensemble_main():
     train.train()
 
 
-def model_load_test():
-    config, device = global_setting('cfg.yaml')
-    model = load_model(device, config, ensemble=True)
-
-
 if __name__ == '__main__':
-    main()
-    # ensemble_main()
+    # main()
+    ensemble_main()
 
 
 

@@ -17,6 +17,8 @@ def print_result(result):
 
 
 def get_accuracy(y_hat, target):
+    y_hat = y_hat.to('cuda')
+    target = target.to('cuda')
     maeloss = torch.nn.L1Loss()
     mseloss = torch.nn.MSELoss()
     y_len = len(y_hat[0])
@@ -161,6 +163,8 @@ def share_loop(epoch=10,
         model.eval()
         with torch.no_grad():
             for data, label in progress_bar:
+                data = data.to(device)
+                label = label.to(device)
                 # data, label = batch
                 out = model(data).float()
                 loss = criterion(out, label)
@@ -176,6 +180,9 @@ def share_loop(epoch=10,
         with torch.no_grad():
             ret_list = []
             for data, label in progress_bar:
+                data = data.to(device)
+                label = label.to(device)
+
                 out = model(data).float()
                 acc = get_accuracy(out, label)
                 print(acc)
@@ -210,6 +217,9 @@ def ensemble_loop(epoch=1,
     with torch.no_grad():
         ret_list = []
         for data, label in progress_bar:
+            data = data.to('cuda')
+            label = label.to('cuda')
+
             mid = model1(data).float()
             out = model2(mid).float()
 

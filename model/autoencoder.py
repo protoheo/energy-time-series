@@ -70,7 +70,7 @@ class AttnEncoder(nn.Module):
         self.lstm = nn.LSTM(
             input_size=self.input_size,
             hidden_size=self.hidden_size,
-            num_layers=1
+            num_layers=self.seq_len
         )
 
         self.attn = nn.Linear(
@@ -94,12 +94,21 @@ class AttnEncoder(nn.Module):
 
         # if self.add_noise and self.training:
         #     input_data += self._get_noise(input_data).to(device)
-
+        print(h_t.size())
         for t in range(self.seq_len):
+            a1 = h_t.repeat(self.input_size, 1, 1).permute(1, 0, 2)
+            print(h_t.size())
+            print(a1.size())
+            b1 = c_t.repeat(self.input_size, 1, 1).permute(1, 0, 2)
+            print(b1.size())
+            print(input_data.size())
+            c1 = input_data.permute(0, 2, 1).to(device)
+            print(c1.size())
+
             x = torch.cat((h_t.repeat(self.input_size, 1, 1).permute(1, 0, 2),
                            c_t.repeat(self.input_size, 1, 1).permute(1, 0, 2),
-                           input_data.permute(0, 2, 1).to(device)), dim=2).to(
-                device)  # bs * input_size * (2 * hidden_dim + seq_len)
+                           input_data.permute(0, 2, 1).to(device)), dim=2).to(device)
+            # bs * input_size * (2 * hidden_dim + seq_len)
 
             e_t = self.attn(x.view(-1, self.hidden_size * 2 + self.seq_len))  # (bs * input_size) * 1
             a_t = self.softmax(e_t.view(-1, self.input_size)).to(device)  # (bs, input_size)
@@ -190,12 +199,13 @@ class AttnDecoder(nn.Module):
 
 
 class AutoEncForecast(nn.Module):
-    def __init__(self, input_size, hidden_size, n_layers, output_size):
+    def __init__(self, input_size, hidden_size, output_size, n_layers):
         super(AutoEncForecast, self).__init__()
+
         self.encoder = AttnEncoder(input_size, hidden_size, n_layers).to(device)
         # self.encoder = Encoder(input_size, hidden_size, n_layers).to(device)
 
-        self.decoder = AttnDecoder(hidden_size, n_layers, output_size).to(device)
+        self.decoder = AttnDecoder(hidden_size, output_size, n_layers).to(device)
         # self.decoder = Decoder(hidden_size, output_size, n_layers).to(device)
 
     def forward(self, inputs):
